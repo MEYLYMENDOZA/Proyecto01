@@ -3,7 +3,6 @@ using Proyecto01.CORE.Core.Interfaces;
 using Proyecto01.CORE.Core.Entities;
 using Proyecto01.CORE.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-// ...
 
 namespace Proyecto01.CORE.Infrastructure.Repositories
 {
@@ -46,6 +45,7 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
                 })
                 .FirstOrDefaultAsync();
         }
+
 
         // --- Getters para Seguridad (Necesitan el Hash) ---
 
@@ -106,21 +106,27 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
             return usuario.IdUsuario;
         }
 
-        public async Task<int> Update(UsuarioResponseDTO dto)
+        public async Task<bool> Update(Usuario usuario)
         {
-            var usuario = await _context.Usuarios.FindAsync(dto.IdUsuario);
-            if (usuario == null) return 0;
+            var existingUsuario = await _context.Usuarios.FindAsync(usuario.IdUsuario);
+            if (existingUsuario == null) return false;
 
-            // Nota: No se actualiza PasswordHash aquí. Si quieres actualizar la clave,
-            // necesitas un método separado que reciba la nueva clave y la hashee.
-            usuario.Username = dto.Username;
-            usuario.Correo = dto.Correo;
-            usuario.IdRolSistema = dto.IdRolSistema;
-            usuario.ActualizadoEn = DateTime.UtcNow;
+            // Actualizar los campos
+            existingUsuario.Username = usuario.Username;
+            existingUsuario.Correo = usuario.Correo;
+            existingUsuario.IdRolSistema = usuario.IdRolSistema;
+            existingUsuario.IdEstadoUsuario = usuario.IdEstadoUsuario;
+            existingUsuario.ActualizadoEn = DateTime.UtcNow;
 
-            _context.Usuarios.Update(usuario);
+            // Si se proporciona un nuevo PasswordHash, actualizarlo
+            if (!string.IsNullOrEmpty(usuario.PasswordHash))
+            {
+                existingUsuario.PasswordHash = usuario.PasswordHash;
+            }
+
+            _context.Usuarios.Update(existingUsuario);
             await _context.SaveChangesAsync();
-            return usuario.IdUsuario;
+            return true;
         }
 
         public async Task<bool> Delete(int id)
