@@ -23,20 +23,25 @@ namespace Proyecto01.CORE.Core.Services
             return await _repository.GetById(id);
         }
 
-        public async Task<UsuarioResponseDTO?> SignIn(string username, string password)
+        public async Task<UsuarioResponseDTO?> SignIn(string correo, string password)
         {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(correo) || string.IsNullOrWhiteSpace(password))
                 return null;
 
-            var usuario = await _repository.GetByUsername(username);
+            // Buscar usuario por correo
+            var usuario = await _repository.GetByCorreo(correo);
             if (usuario == null) return null;
 
-            // Obtener el usuario completo para verificar la contraseña
-            var usuarioDb = await _repository.GetByUsername(username);
-            if (usuarioDb == null) return null;
+            // Verificar la contraseña usando BCrypt
+            if (string.IsNullOrEmpty(usuario.PasswordHash))
+                return null;
 
-            // Aquí deberías validar la contraseña con BCrypt
-            // Por ahora retornamos el usuario si existe
+            bool isValidPassword = BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash);
+            if (!isValidPassword)
+                return null;
+
+            // No retornar el PasswordHash al cliente por seguridad
+            usuario.PasswordHash = null;
             return usuario;
         }
 
@@ -58,6 +63,9 @@ namespace Proyecto01.CORE.Core.Services
             var emailExists = await _repository.ExistsByCorreo(dto.Correo);
             if (emailExists)
                 throw new InvalidOperationException("El correo ya está registrado.");
+
+            // Generar hash de la contraseña usando BCrypt
+            dto.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             return await _repository.Insert(dto);
         }

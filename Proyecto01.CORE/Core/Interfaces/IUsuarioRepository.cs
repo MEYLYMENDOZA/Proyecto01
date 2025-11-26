@@ -7,6 +7,7 @@ namespace Proyecto01.CORE.Core.Interfaces
         Task<IEnumerable<UsuarioResponseDTO>> GetAll();
         Task<UsuarioResponseDTO?> GetById(int id);
         Task<UsuarioResponseDTO?> GetByUsername(string username);
+        Task<UsuarioResponseDTO?> GetByCorreo(string correo);
         Task<int> Insert(UsuarioCreateDTO dto);
         Task<int> Update(UsuarioResponseDTO dto);
         Task<bool> Delete(int id);
