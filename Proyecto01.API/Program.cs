@@ -14,6 +14,17 @@ var cnx = _config.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<Proyecto01DbContext>(options =>
     options.UseSqlServer(cnx));
 
+// Configuración de CORS para permitir conexiones desde Android
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAndroid", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Registro de Repositorios
 builder.Services.AddScoped<IAreaRepository, AreaRepository>();
 builder.Services.AddScoped<IPersonalRepository, PersonalRepository>();
@@ -59,7 +70,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// Habilitar CORS para permitir conexiones desde Android
+app.UseCors("AllowAndroid");
+
+// NO usar redirección HTTPS en desarrollo - comentado para permitir HTTP desde Android
+// IMPORTANTE: Descomenta esta línea en producción
+// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
