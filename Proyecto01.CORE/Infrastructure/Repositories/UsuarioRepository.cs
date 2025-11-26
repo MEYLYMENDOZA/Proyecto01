@@ -4,8 +4,6 @@ using Proyecto01.CORE.Core.Entities;
 using Proyecto01.CORE.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-
-
 namespace Proyecto01.CORE.Infrastructure.Repositories
 {
     public class UsuarioRepository : IUsuarioRepository
@@ -16,6 +14,8 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
         {
             _context = context;
         }
+
+        // --- Getters de Datos Generales (Mantienen el mapeo sin Hash) ---
 
         public async Task<IEnumerable<UsuarioResponseDTO>> GetAll()
         {
@@ -46,6 +46,9 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+
+        // --- Getters para Seguridad (Necesitan el Hash) ---
+
         public async Task<UsuarioResponseDTO?> GetByUsername(string username)
         {
             var usuario = await _context.Usuarios
@@ -53,15 +56,38 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
 
             if (usuario == null) return null;
 
+            // Mapeo corregido: Incluye PasswordHash para que el Servicio pueda verificar
             return new UsuarioResponseDTO
             {
                 IdUsuario = usuario.IdUsuario,
                 Username = usuario.Username,
                 Correo = usuario.Correo,
+                PasswordHash = usuario.PasswordHash, // ¡CRÍTICO para seguridad!
                 IdRolSistema = usuario.IdRolSistema,
                 CreadoEn = usuario.CreadoEn
             };
         }
+
+        public async Task<UsuarioResponseDTO?> GetByCorreo(string correo)
+        {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Correo == correo);
+
+            if (usuario == null) return null;
+
+            // Mapeo corregido: Incluye PasswordHash para que el Servicio pueda verificar
+            return new UsuarioResponseDTO
+            {
+                IdUsuario = usuario.IdUsuario,
+                Username = usuario.Username,
+                Correo = usuario.Correo,
+                PasswordHash = usuario.PasswordHash, // ¡CRÍTICO para seguridad!
+                IdRolSistema = usuario.IdRolSistema,
+                CreadoEn = usuario.CreadoEn
+            };
+        }
+
+        // --- CRUD Restante (Insert, Update, Delete, Exists) ---
 
         public async Task<int> Insert(UsuarioCreateDTO dto)
         {
@@ -69,10 +95,9 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
             {
                 Username = dto.Username,
                 Correo = dto.Correo,
-                // Línea corregida en tu método Insert:
-
                 PasswordHash = dto.PasswordHash,
                 IdRolSistema = dto.IdRolSistema,
+                IdEstadoUsuario = dto.IdEstadoUsuario,
                 CreadoEn = DateTime.UtcNow
             };
 
@@ -81,19 +106,27 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
             return usuario.IdUsuario;
         }
 
-        public async Task<int> Update(UsuarioResponseDTO dto)
+        public async Task<bool> Update(Usuario usuario)
         {
-            var usuario = await _context.Usuarios.FindAsync(dto.IdUsuario);
-            if (usuario == null) return 0;
+            var existingUsuario = await _context.Usuarios.FindAsync(usuario.IdUsuario);
+            if (existingUsuario == null) return false;
 
-            usuario.Username = dto.Username;
-            usuario.Correo = dto.Correo;
-            usuario.IdRolSistema = dto.IdRolSistema;
-            usuario.ActualizadoEn = DateTime.UtcNow;
+            // Actualizar los campos
+            existingUsuario.Username = usuario.Username;
+            existingUsuario.Correo = usuario.Correo;
+            existingUsuario.IdRolSistema = usuario.IdRolSistema;
+            existingUsuario.IdEstadoUsuario = usuario.IdEstadoUsuario;
+            existingUsuario.ActualizadoEn = DateTime.UtcNow;
 
-            _context.Usuarios.Update(usuario);
+            // Si se proporciona un nuevo PasswordHash, actualizarlo
+            if (!string.IsNullOrEmpty(usuario.PasswordHash))
+            {
+                existingUsuario.PasswordHash = usuario.PasswordHash;
+            }
+
+            _context.Usuarios.Update(existingUsuario);
             await _context.SaveChangesAsync();
-            return usuario.IdUsuario;
+            return true;
         }
 
         public async Task<bool> Delete(int id)

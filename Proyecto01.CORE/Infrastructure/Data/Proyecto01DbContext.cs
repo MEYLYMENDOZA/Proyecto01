@@ -59,12 +59,27 @@ namespace Proyecto01.CORE.Infrastructure.Data
             // Configuración de Usuario
             modelBuilder.Entity<Usuario>(entity =>
             {
-                entity.HasKey(e => e.IdUsuario);
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Correo).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.PasswordHash).HasMaxLength(255);
-                entity.Property(e => e.CreadoEn).IsRequired();
+                // 1. CORRECCIÓN DEL NOMBRE DE LA TABLA (Ya la habías hecho, la repetimos para claridad)
+                entity.ToTable("usuario");
 
+                entity.HasKey(e => e.IdUsuario);
+
+                // 2. CORRECCIÓN DE LOS NOMBRES DE LAS COLUMNAS (Snake_case en la BD)
+                entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+                entity.Property(e => e.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Correo).HasColumnName("correo").IsRequired().HasMaxLength(100);
+                entity.Property(e => e.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
+
+                entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
+                entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
+
+                // Esta es la línea que resuelve el error 'Invalid column name 'CreadoEn''
+                entity.Property(e => e.CreadoEn).HasColumnName("creado_en").IsRequired();
+                entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
+                entity.Property(e => e.UltimoLogin).HasColumnName("ultimo_login");
+
+
+                // ... (restricciones de navegación sin cambios) ...
                 entity.HasOne(e => e.RolesSistema)
                     .WithMany(r => r.Usuarios)
                     .HasForeignKey(e => e.IdRolSistema)
