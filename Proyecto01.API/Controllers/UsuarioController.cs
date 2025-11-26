@@ -19,6 +19,7 @@ namespace Proyecto01.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            // Nota: Este endpoint debe estar protegido para solo Administradores.
             var users = await _usuarioService.GetAll();
             return Ok(users);
         }
@@ -33,7 +34,8 @@ namespace Proyecto01.API.Controllers
             return Ok(user);
         }
 
-        // 3. POST - Registrar/Crear un nuevo usuario
+        // 3. POST - Registrar/Crear un nuevo usuario (SignUp)
+        // La ruta es /api/User
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] UsuarioCreateDTO dto)
         {
@@ -42,76 +44,93 @@ namespace Proyecto01.API.Controllers
 
             try
             {
+                // Aquí el servicio debe hashear la contraseña
                 var id = await _usuarioService.SignUp(dto);
+                // Retorna 201 Created y la ubicación del nuevo recurso
                 return CreatedAtAction(nameof(GetById), new { id }, new { id });
             }
             catch (ArgumentException ex)
             {
+                // Manejar errores de validación específica o datos inválidos (e.g., ID de rol/estado no existe)
                 return BadRequest(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
+                // Manejar conflictos como el correo o username ya existen
                 return Conflict(new { message = ex.Message });
             }
         }
 
         // 4. POST - Iniciar Sesión (SignIn)
+        // La ruta es /api/User/SignIn
         [HttpPost("SignIn")]
         public async Task<IActionResult> SignIn([FromBody] LoginDTO login)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // Nota: El LoginDTO debe contener Correo y Password
             var user = await _usuarioService.SignIn(login.Correo, login.Password);
 
             if (user == null)
             {
+                // 401 Unauthorized
                 return Unauthorized("Correo o contraseña incorrectos.");
             }
 
-            // Aquí puedes generar un token JWT si lo tienes implementado
+            // Retorna 200 OK con los datos del usuario (excluyendo el hash)
             return Ok(user);
         }
 
         // 5. PUT - Actualizar un usuario existente
+        // La ruta es /api/User/{id}
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UsuarioUpdateDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Validar que el ID de la ruta coincida con el ID del DTO
+            // CRÍTICO: Asegurar que el ID de la ruta y el cuerpo coincidan
             if (id != dto.IdUsuario)
-                return BadRequest("El ID de la ruta no coincide con el ID del usuario.");
+                return BadRequest(new { Message = "El ID de la ruta no coincide con el ID del usuario a actualizar." });
 
             try
             {
                 var result = await _usuarioService.Update(dto);
 
                 if (!result)
-                    return NotFound($"Usuario con ID {dto.IdUsuario} no encontrado para actualizar.");
+                {
+                    // Si el servicio devuelve false, el usuario no fue encontrado
+                    return NotFound($"Usuario con ID {id} no encontrado para actualizar.");
+                }
 
+                // 204 No Content: Éxito en la actualización sin devolver contenido
                 return NoContent();
             }
             catch (ArgumentException ex)
             {
+                // Manejar errores de datos inválidos (e.g., formato de correo)
                 return BadRequest(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
+                // Manejar errores de duplicidad (e.g., intentar cambiar el correo a uno existente)
                 return Conflict(new { message = ex.Message });
             }
         }
 
         // 6. DELETE - Eliminar un usuario
+        // La ruta es /api/User/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _usuarioService.Delete(id);
 
             if (!success)
+                // 404 Not Found
                 return NotFound($"Usuario con ID {id} no encontrado para eliminar.");
 
+            // 204 No Content: Éxito en la eliminación sin devolver contenido
             return NoContent();
         }
     }
