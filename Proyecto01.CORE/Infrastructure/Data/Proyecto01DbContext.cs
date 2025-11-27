@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using Proyecto01.CORE.Core.Entities;
 
@@ -32,7 +33,21 @@ namespace Proyecto01.CORE.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ConfiguraciÛn de Area
+            // --- A√ëADE ESTOS √çNDICES ---
+
+            // √çndice para la clave for√°nea en la tabla 'solicitud' que apunta a 'config_sla'
+            modelBuilder.Entity<Solicitud>()
+                .HasIndex(s => s.IdSla);
+
+            // √çndice para la clave for√°nea en la tabla 'solicitud' que apunta a 'rol_registro'
+            modelBuilder.Entity<Solicitud>()
+                .HasIndex(s => s.IdRolRegistro);
+                
+            // √çndice para la columna de fecha que se usa para filtrar
+            modelBuilder.Entity<Solicitud>()
+                .HasIndex(s => s.FechaSolicitud);
+
+            // Configuracin de Area
             modelBuilder.Entity<Area>(entity =>
             {
                 entity.ToTable("area");
@@ -42,7 +57,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // ConfiguraciÛn de Personal
+            // Configuracin de Personal
             modelBuilder.Entity<Personal>(entity =>
             {
                 entity.ToTable("personal");
@@ -61,7 +76,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ConfiguraciÛn de Usuario
+            // Configuracin de Usuario
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.ToTable("usuario");
@@ -85,7 +100,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ConfiguraciÛn de Solicitud
+            // Configuracin de Solicitud
             modelBuilder.Entity<Solicitud>(entity =>
             {
                 entity.ToTable("solicitud");
@@ -142,7 +157,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ConfiguraciÛn de RolesSistema
+            // Configuracin de RolesSistema
             modelBuilder.Entity<RolesSistema>(entity =>
             {
                 entity.ToTable("roles_sistema");
@@ -154,7 +169,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.EsActivo).IsRequired().HasColumnName("es_activo");
             });
 
-            // ConfiguraciÛn de EstadoUsuarioCatalogo
+            // Configuracin de EstadoUsuarioCatalogo
             modelBuilder.Entity<EstadoUsuarioCatalogo>(entity =>
             {
                 entity.ToTable("estado_usuario_catalogo");
@@ -164,7 +179,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // ConfiguraciÛn de EstadoSolicitudCatalogo
+            // Configuracin de EstadoSolicitudCatalogo
             modelBuilder.Entity<EstadoSolicitudCatalogo>(entity =>
             {
                 entity.ToTable("estado_solicitud_catalogo");
@@ -174,7 +189,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // ConfiguraciÛn de ConfigSla
+            // Configuracin de ConfigSla
             modelBuilder.Entity<ConfigSla>(entity =>
             {
                 entity.ToTable("config_sla");
@@ -206,7 +221,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ConfiguraciÛn de TipoSolicitudCatalogo
+            // Configuracin de TipoSolicitudCatalogo
             modelBuilder.Entity<TipoSolicitudCatalogo>(entity =>
             {
                 entity.ToTable("tipo_solicitud_catalogo");
@@ -216,7 +231,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // ConfiguraciÛn de RolRegistro
+            // Configuracin de RolRegistro
             modelBuilder.Entity<RolRegistro>(entity =>
             {
                 entity.ToTable("rol_registro");
@@ -228,7 +243,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.EsActivo).IsRequired().HasColumnName("es_activo");
             });
 
-            // ConfiguraciÛn de Alerta
+            // Configuracin de Alerta
             modelBuilder.Entity<Alerta>(entity =>
             {
                 entity.ToTable("alerta");
@@ -258,7 +273,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ConfiguraciÛn de TipoAlertaCatalogo
+            // Configuracin de TipoAlertaCatalogo
             modelBuilder.Entity<TipoAlertaCatalogo>(entity =>
             {
                 entity.ToTable("tipo_alerta_catalogo");
@@ -268,7 +283,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // ConfiguraciÛn de EstadoAlertaCatalogo
+            // Configuracin de EstadoAlertaCatalogo
             modelBuilder.Entity<EstadoAlertaCatalogo>(entity =>
             {
                 entity.ToTable("estado_alerta_catalogo");
@@ -278,7 +293,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // ConfiguraciÛn de Reporte
+            // Configuracin de Reporte
             modelBuilder.Entity<Reporte>(entity =>
             {
                 entity.ToTable("reporte");
@@ -297,7 +312,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ConfiguraciÛn de ReporteDetalle (tabla intermedia)
+            // Configuracin de ReporteDetalle (tabla intermedia)
             modelBuilder.Entity<ReporteDetalle>(entity =>
             {
                 entity.ToTable("reporte_detalle");
@@ -316,7 +331,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ConfiguraciÛn de Permiso
+            // Configuracin de Permiso
             modelBuilder.Entity<Permiso>(entity =>
             {
                 entity.ToTable("permiso");
@@ -327,7 +342,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Nombre).HasMaxLength(100).HasColumnName("nombre");
             });
 
-            // ConfiguraciÛn de RolPermiso (tabla intermedia)
+            // Configuracin de RolPermiso (tabla intermedia)
             modelBuilder.Entity<RolPermiso>(entity =>
             {
                 entity.ToTable("rol_permiso");
