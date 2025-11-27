@@ -3,6 +3,11 @@ using Proyecto01.CORE.Infrastructure.Data;
 using Proyecto01.CORE.Core.Interfaces;
 using Proyecto01.CORE.Core.Services;
 using Proyecto01.CORE.Infrastructure.Repositories;
+using OfficeOpenXml; // <--- using para EPPlus
+
+// --- SOLUCIÓN PARA LA LICENCIA DE EPPLUS v6 ---
+// Esta versión de la librería requiere que se establezca esta propiedad.
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var builder = WebApplication.CreateBuilder(args);
 
