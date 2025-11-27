@@ -28,6 +28,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
         public DbSet<ReporteDetalle> ReporteDetalles { get; set; }
         public DbSet<Permiso> Permisos { get; set; }
         public DbSet<RolPermiso> RolPermisos { get; set; }
+        public DbSet<PrediccionTendenciaLog> PrediccionTendenciaLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -98,6 +99,10 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .WithMany(e => e.Usuarios)
                     .HasForeignKey(e => e.IdEstadoUsuario)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                // Ignorar propiedades de navegación no mapeadas
+                entity.Ignore(e => e.ConfigSlasCreadas);
+                entity.Ignore(e => e.ConfigSlasActualizadas);
             });
 
             // Configuracin de Solicitud
@@ -131,8 +136,9 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .HasForeignKey(e => e.IdRolRegistro)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                // Relación con ConfigSla sin mapeo inverso (ya que ConfigSla.Solicitudes está ignorado)
                 entity.HasOne(e => e.ConfigSla)
-                    .WithMany(c => c.Solicitudes)
+                    .WithMany()
                     .HasForeignKey(e => e.IdSla)
                     .OnDelete(DeleteBehavior.Restrict);
 
@@ -205,20 +211,11 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.ActualizadoPor).HasColumnName("actualizado_por");
                 entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
 
-                entity.HasOne(e => e.TipoSolicitud)
-                    .WithMany(t => t.ConfigSlas)
-                    .HasForeignKey(e => e.IdTipoSolicitud)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.UsuarioCreadoPor)
-                    .WithMany(u => u.ConfigSlasCreadas)
-                    .HasForeignKey(e => e.CreadoPor)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.UsuarioActualizadoPor)
-                    .WithMany(u => u.ConfigSlasActualizadas)
-                    .HasForeignKey(e => e.ActualizadoPor)
-                    .OnDelete(DeleteBehavior.Restrict);
+                // Ignorar propiedades de navegación que no tienen columnas en la BD
+                entity.Ignore(e => e.TipoSolicitud);
+                entity.Ignore(e => e.UsuarioCreadoPor);
+                entity.Ignore(e => e.UsuarioActualizadoPor);
+                entity.Ignore(e => e.Solicitudes);
             });
 
             // Configuracin de TipoSolicitudCatalogo
@@ -359,6 +356,27 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .WithMany(p => p.RolPermisos)
                     .HasForeignKey(e => e.IdPermiso)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configuración de PrediccionTendenciaLog
+            modelBuilder.Entity<PrediccionTendenciaLog>(entity =>
+            {
+                entity.ToTable("prediccion_tendencia_log");
+                entity.HasKey(e => e.IdLog);
+                entity.Property(e => e.IdLog).HasColumnName("id_log");
+                entity.Property(e => e.TipoSla).IsRequired().HasMaxLength(10).HasColumnName("tipo_sla");
+                entity.Property(e => e.IdArea).HasColumnName("id_area");
+                entity.Property(e => e.FechaAnalisis).IsRequired().HasColumnName("fecha_analisis");
+                entity.Property(e => e.MesAnalisis).IsRequired().HasColumnName("mes_analisis");
+                entity.Property(e => e.AnioAnalisis).IsRequired().HasColumnName("anio_analisis");
+                entity.Property(e => e.TotalSolicitudes).HasColumnName("total_solicitudes");
+                entity.Property(e => e.CumplenSla).HasColumnName("cumplen_sla");
+                entity.Property(e => e.PorcentajeCumplimiento).HasColumnType("decimal(5,2)").HasColumnName("porcentaje_cumplimiento");
+                entity.Property(e => e.ProyeccionMesSiguiente).HasColumnType("decimal(5,2)").HasColumnName("proyeccion_mes_siguiente");
+                entity.Property(e => e.TendenciaEstado).HasMaxLength(50).HasColumnName("tendencia_estado");
+                entity.Property(e => e.UsuarioSolicitante).HasMaxLength(100).HasColumnName("usuario_solicitante");
+                entity.Property(e => e.IpCliente).HasMaxLength(50).HasColumnName("ip_cliente");
+                entity.Property(e => e.CreadoEn).IsRequired().HasColumnName("creado_en");
             });
         }
     }
