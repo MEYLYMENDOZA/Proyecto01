@@ -41,6 +41,8 @@ builder.Services.AddScoped<IEstadoSolicitudCatalogoRepository, EstadoSolicitudCa
 builder.Services.AddScoped<IEstadoUsuarioCatalogoRepository, EstadoUsuarioCatalogoRepository>();
 builder.Services.AddScoped<ITipoAlertaCatalogoRepository, TipoAlertaCatalogoRepository>();
 builder.Services.AddScoped<ITipoSolicitudCatalogoRepository, TipoSolicitudCatalogoRepository>();
+builder.Services.AddScoped<ISlaRepository, SlaRepository>();
+builder.Services.AddScoped<ITendenciaLogRepository, TendenciaLogRepository>();
 
 // Registro de Servicios
 builder.Services.AddScoped<IAreaService, AreaService>();
@@ -58,6 +60,7 @@ builder.Services.AddScoped<IEstadoSolicitudCatalogoService, EstadoSolicitudCatal
 builder.Services.AddScoped<IEstadoUsuarioCatalogoService, EstadoUsuarioCatalogoService>();
 builder.Services.AddScoped<ITipoAlertaCatalogoService, TipoAlertaCatalogoService>();
 builder.Services.AddScoped<ITipoSolicitudCatalogoService, TipoSolicitudCatalogoService>();
+builder.Services.AddScoped<Proyecto01.CORE.Application.Services.TendenciaService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
