@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto01.CORE.Infrastructure.Data;
+using Proyecto01.CORE.Core.DTOs;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Proyecto01.API.Controllers
 {
@@ -39,25 +43,23 @@ namespace Proyecto01.API.Controllers
                 // Iniciar query base con includes necesarios
                 var query = _context.Solicitudes
                     .Include(s => s.ConfigSla)
+                    .Include(s => s.RolRegistro)
                     .AsQueryable();
 
                 // Aplicar filtros de fecha
                 if (anio.HasValue && mes.HasValue)
                 {
-                    // Filtro por mes/año específico
                     query = query.Where(s => s.FechaSolicitud.HasValue &&
                                              s.FechaSolicitud.Value.Year == anio.Value &&
                                              s.FechaSolicitud.Value.Month == mes.Value);
                 }
                 else if (anio.HasValue)
                 {
-                    // Solo año (todos los meses de ese año)
                     query = query.Where(s => s.FechaSolicitud.HasValue &&
                                              s.FechaSolicitud.Value.Year == anio.Value);
                 }
                 else if (meses.HasValue)
                 {
-                    // Últimos N meses desde hoy
                     var fechaInicio = DateTime.UtcNow.AddMonths(-meses.Value);
                     query = query.Where(s => s.FechaSolicitud.HasValue &&
                                              s.FechaSolicitud.Value >= fechaInicio);
@@ -69,25 +71,31 @@ namespace Proyecto01.API.Controllers
                     query = query.Where(s => s.IdArea == idArea.Value);
                 }
 
-                // Proyectar a DTO que Android espera
+                // Proyectar al nuevo SolicitudReporteDTO
                 var solicitudes = await query
                     .OrderBy(s => s.FechaSolicitud)
-                    .Select(s => new
+                    .Select(s => new SolicitudReporteDTO
                     {
-                        idSolicitud = s.IdSolicitud,
-                        // Formato ISO para Android (yyyy-MM-ddTHH:mm:ss)
-                        fechaSolicitud = s.FechaSolicitud.HasValue
-                            ? s.FechaSolicitud.Value.ToString("yyyy-MM-ddTHH:mm:ss")
-                            : DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"),
-                        // Días que tomó resolver la solicitud
-                        numDiasSla = s.NumDiasSla ??
-                            (s.FechaSolicitud.HasValue && s.FechaIngreso.HasValue
-                                ? (int)(s.FechaIngreso.Value - s.FechaSolicitud.Value).TotalDays
-                                : 0),
-                        // Días máximos permitidos según configuración SLA
-                        diasUmbral = s.ConfigSla != null ? (s.ConfigSla.DiasUmbral ?? 30) : 30,
-                        idArea = s.IdArea,
-                        codigoSla = s.ConfigSla != null ? s.ConfigSla.CodigoSla : "N/A"
+                        IdSolicitud = s.IdSolicitud,
+                        FechaSolicitud = s.FechaSolicitud,
+                        FechaIngreso = s.FechaIngreso,
+                        ResumenSla = s.ResumenSla,
+
+                        NumDiasSla = s.NumDiasSla ?? 
+                            (s.FechaSolicitud.HasValue && s.FechaIngreso.HasValue 
+                                ? (int?)(s.FechaIngreso.Value - s.FechaSolicitud.Value).TotalDays 
+                                : null),
+                        
+                        ConfigSla = s.ConfigSla != null ? new ConfigSlaDTO
+                        {
+                            CodigoSla = s.ConfigSla.CodigoSla,
+                            DiasUmbral = s.ConfigSla.DiasUmbral
+                        } : null,
+                        
+                        Rol = s.RolRegistro != null ? new RolDTO
+                        {
+                            Nombre = s.RolRegistro.NombreRol
+                        } : null
                     })
                     .ToListAsync();
 
@@ -168,4 +176,3 @@ namespace Proyecto01.API.Controllers
         }
     }
 }
-
