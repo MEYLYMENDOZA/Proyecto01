@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Proyecto01.CORE.Core.DTOs;
 using Proyecto01.CORE.Core.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Proyecto01.API.Controllers
 {
@@ -43,15 +46,21 @@ namespace Proyecto01.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] ConfigSlaUpdateDTO dto)
+        public async Task<IActionResult> Update([FromBody] List<ConfigSlaUpdateDTO> dtos)
         {
+            if (dtos == null || !dtos.Any())
+            {
+                return BadRequest("La lista de configuraciones no puede estar vacía.");
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _configSlaService.Update(dto);
-            if (result == 0)
-                return NotFound($"ConfigSla con ID {dto.IdSla} no encontrada.");
-
+            foreach (var dto in dtos)
+            {
+                await _configSlaService.Update(dto);
+            }
+            
             return NoContent();
         }
 

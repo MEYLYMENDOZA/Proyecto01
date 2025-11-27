@@ -10,6 +10,6 @@ namespace Proyecto01.CORE.Core.Entities
 
         public ICollection<RolPermiso>? RolPermisos { get; set; }
         public ICollection<Usuario>? Usuarios { get; set; }
-        public ICollection<ConfigSla>? ConfigSlas { get; set; }
+        // public ICollection<ConfigSla>? ConfigSlas { get; set; } // <-- Eliminada relación incorrecta
     }
 }

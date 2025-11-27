@@ -67,32 +67,36 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
             return configSla.IdSla;
         }
 
-        public async Task<int> Update(ConfigSlaUpdateDTO dto)
+        public async Task<bool> Update(ConfigSlaUpdateDTO dto)
         {
-            var configSla = await _context.ConfigSlas.FindAsync(dto.IdSla);
-            if (configSla == null) return 0;
+            // 1. Buscar la entidad en la BD usando el CÓDIGO, no un ID.
+            var configEntity = await _context.ConfigSlas
+                                .FirstOrDefaultAsync(c => c.CodigoSla == dto.CodigoSla);
 
-            if (dto.CodigoSla != null)
-                configSla.CodigoSla = dto.CodigoSla;
+            // 2. Si no se encuentra, no se puede actualizar.
+            if (configEntity == null)
+            {
+                return false;
+            }
 
-            if (dto.Descripcion != null)
-                configSla.Descripcion = dto.Descripcion;
-
+            // 3. Actualizar el valor en la entidad que encontraste.
             if (dto.DiasUmbral.HasValue)
-                configSla.DiasUmbral = dto.DiasUmbral;
+            {
+                configEntity.DiasUmbral = dto.DiasUmbral.Value;
+            }
+            
+            // (Opcional) Actualizar otros campos si es necesario
+            configEntity.ActualizadoEn = DateTime.UtcNow;
+            if (dto.ActualizadoPor.HasValue)
+            {
+                configEntity.ActualizadoPor = dto.ActualizadoPor;
+            }
 
-            if (dto.EsActivo.HasValue)
-                configSla.EsActivo = dto.EsActivo.Value;
+            // 4. Guardar los cambios en la base de datos.
+            var changes = await _context.SaveChangesAsync();
 
-            if (dto.IdTipoSolicitud.HasValue)
-                configSla.IdTipoSolicitud = dto.IdTipoSolicitud.Value;
-
-            configSla.ActualizadoEn = DateTime.UtcNow;
-            configSla.ActualizadoPor = dto.ActualizadoPor;
-
-            _context.ConfigSlas.Update(configSla);
-            await _context.SaveChangesAsync();
-            return configSla.IdSla;
+            // 5. Devolver 'true' solo si se guardó al menos un cambio.
+            return changes > 0;
         }
 
         public async Task<bool> Delete(int id)

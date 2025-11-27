@@ -27,7 +27,7 @@ namespace Proyecto01.CORE.Core.Services
             return await _configSlaRepository.Insert(dto);
         }
 
-        public async Task<int> Update(ConfigSlaUpdateDTO dto)
+        public async Task<bool> Update(ConfigSlaUpdateDTO dto)
         {
             return await _configSlaRepository.Update(dto);
         }
