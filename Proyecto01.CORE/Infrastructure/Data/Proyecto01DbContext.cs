@@ -34,17 +34,17 @@ namespace Proyecto01.CORE.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // --- AÑADE ESTOS ÍNDICES ---
+            // --- AÃ‘ADE ESTOS ÃNDICES ---
 
-            // Índice para la clave foránea en la tabla 'solicitud' que apunta a 'config_sla'
+            // Ãndice para la clave forÃ¡nea en la tabla 'solicitud' que apunta a 'config_sla'
             modelBuilder.Entity<Solicitud>()
                 .HasIndex(s => s.IdSla);
 
-            // Índice para la clave foránea en la tabla 'solicitud' que apunta a 'rol_registro'
+            // Ãndice para la clave forÃ¡nea en la tabla 'solicitud' que apunta a 'rol_registro'
             modelBuilder.Entity<Solicitud>()
                 .HasIndex(s => s.IdRolRegistro);
                 
-            // Índice para la columna de fecha que se usa para filtrar
+            // Ãndice para la columna de fecha que se usa para filtrar
             modelBuilder.Entity<Solicitud>()
                 .HasIndex(s => s.FechaSolicitud);
 
@@ -80,6 +80,11 @@ namespace Proyecto01.CORE.Infrastructure.Data
             // Configuracin de Usuario
             modelBuilder.Entity<Usuario>(entity =>
             {
+                // 1. CORRECCIÓN DEL NOMBRE DE LA TABLA (Ya la habías hecho, la repetimos para claridad)
+                entity.ToTable("usuario");
+
+                entity.HasKey(e => e.IdUsuario);
+
                 entity.ToTable("usuario");
                 entity.HasKey(e => e.IdUsuario);
                 entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
@@ -89,7 +94,24 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
                 entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
                 entity.Property(e => e.CreadoEn).IsRequired().HasColumnName("creado_en");
+ 
 
+                // 2. CORRECCIÓN DE LOS NOMBRES DE LAS COLUMNAS (Snake_case en la BD)
+                entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+                entity.Property(e => e.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Correo).HasColumnName("correo").IsRequired().HasMaxLength(100);
+                entity.Property(e => e.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
+
+                entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
+                entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
+
+                // Esta es la línea que resuelve el error 'Invalid column name 'CreadoEn''
+                entity.Property(e => e.CreadoEn).HasColumnName("creado_en").IsRequired();
+                entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
+                entity.Property(e => e.UltimoLogin).HasColumnName("ultimo_login");
+
+
+                // ... (restricciones de navegación sin cambios) ...
                 entity.HasOne(e => e.RolesSistema)
                     .WithMany(r => r.Usuarios)
                     .HasForeignKey(e => e.IdRolSistema)
@@ -100,7 +122,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .HasForeignKey(e => e.IdEstadoUsuario)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Ignorar propiedades de navegaci�n no mapeadas
+                // Ignorar propiedades de navegación no mapeadas
                 entity.Ignore(e => e.ConfigSlasCreadas);
                 entity.Ignore(e => e.ConfigSlasActualizadas);
             });
@@ -136,7 +158,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .HasForeignKey(e => e.IdRolRegistro)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Relaci�n con ConfigSla sin mapeo inverso (ya que ConfigSla.Solicitudes est� ignorado)
+                // Relación con ConfigSla sin mapeo inverso (ya que ConfigSla.Solicitudes está ignorado)
                 entity.HasOne(e => e.ConfigSla)
                     .WithMany()
                     .HasForeignKey(e => e.IdSla)
@@ -211,7 +233,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.ActualizadoPor).HasColumnName("actualizado_por");
                 entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
 
-                // Ignorar propiedades de navegaci�n que no tienen columnas en la BD
+                // Ignorar propiedades de navegación que no tienen columnas en la BD
                 entity.Ignore(e => e.TipoSolicitud);
                 entity.Ignore(e => e.UsuarioCreadoPor);
                 entity.Ignore(e => e.UsuarioActualizadoPor);
@@ -358,7 +380,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configuraci�n de PrediccionTendenciaLog
+            // Configuración de PrediccionTendenciaLog
             modelBuilder.Entity<PrediccionTendenciaLog>(entity =>
             {
                 entity.ToTable("prediccion_tendencia_log");

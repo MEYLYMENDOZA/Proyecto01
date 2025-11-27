@@ -1,4 +1,5 @@
 using Proyecto01.CORE.Core.DTOs;
+using Proyecto01.CORE.Core.Entities;
 
 namespace Proyecto01.CORE.Core.Interfaces
 {
@@ -7,8 +8,9 @@ namespace Proyecto01.CORE.Core.Interfaces
         Task<IEnumerable<UsuarioResponseDTO>> GetAll();
         Task<UsuarioResponseDTO?> GetById(int id);
         Task<UsuarioResponseDTO?> GetByUsername(string username);
+        Task<UsuarioResponseDTO?> GetByCorreo(string correo);
         Task<int> Insert(UsuarioCreateDTO dto);
-        Task<int> Update(UsuarioResponseDTO dto);
+        Task<bool> Update(Usuario usuario);
         Task<bool> Delete(int id);
         Task<bool> Exists(int id);
         Task<bool> ExistsByUsername(string username);
