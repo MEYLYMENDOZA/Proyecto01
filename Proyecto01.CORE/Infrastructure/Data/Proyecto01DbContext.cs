@@ -34,21 +34,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // --- AÃ‘ADE ESTOS ÃNDICES ---
-
-            // Ãndice para la clave forÃ¡nea en la tabla 'solicitud' que apunta a 'config_sla'
-            modelBuilder.Entity<Solicitud>()
-                .HasIndex(s => s.IdSla);
-
-            // Ãndice para la clave forÃ¡nea en la tabla 'solicitud' que apunta a 'rol_registro'
-            modelBuilder.Entity<Solicitud>()
-                .HasIndex(s => s.IdRolRegistro);
-                
-            // Ãndice para la columna de fecha que se usa para filtrar
-            modelBuilder.Entity<Solicitud>()
-                .HasIndex(s => s.FechaSolicitud);
-
-            // Configuracin de Area
+            // --- Area ---
             modelBuilder.Entity<Area>(entity =>
             {
                 entity.ToTable("area");
@@ -58,7 +44,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuracin de Personal
+            // --- Personal ---
             modelBuilder.Entity<Personal>(entity =>
             {
                 entity.ToTable("personal");
@@ -77,14 +63,10 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuracin de Usuario
+            // --- Usuario (CONFIGURACIÓN CORREGIDA Y LIMPIA) ---
+            // --- Usuario ---
             modelBuilder.Entity<Usuario>(entity =>
             {
-                // 1. CORRECCIÓN DEL NOMBRE DE LA TABLA (Ya la habías hecho, la repetimos para claridad)
-                entity.ToTable("usuario");
-
-                entity.HasKey(e => e.IdUsuario);
-
                 entity.ToTable("usuario");
                 entity.HasKey(e => e.IdUsuario);
                 entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
@@ -94,24 +76,9 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
                 entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
                 entity.Property(e => e.CreadoEn).IsRequired().HasColumnName("creado_en");
- 
-
-                // 2. CORRECCIÓN DE LOS NOMBRES DE LAS COLUMNAS (Snake_case en la BD)
-                entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
-                entity.Property(e => e.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Correo).HasColumnName("correo").IsRequired().HasMaxLength(100);
-                entity.Property(e => e.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
-
-                entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
-                entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
-
-                // Esta es la línea que resuelve el error 'Invalid column name 'CreadoEn''
-                entity.Property(e => e.CreadoEn).HasColumnName("creado_en").IsRequired();
                 entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
                 entity.Property(e => e.UltimoLogin).HasColumnName("ultimo_login");
 
-
-                // ... (restricciones de navegación sin cambios) ...
                 entity.HasOne(e => e.RolesSistema)
                     .WithMany(r => r.Usuarios)
                     .HasForeignKey(e => e.IdRolSistema)
@@ -121,13 +88,9 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .WithMany(e => e.Usuarios)
                     .HasForeignKey(e => e.IdEstadoUsuario)
                     .OnDelete(DeleteBehavior.Restrict);
-
-                // Ignorar propiedades de navegación no mapeadas
-                entity.Ignore(e => e.ConfigSlasCreadas);
-                entity.Ignore(e => e.ConfigSlasActualizadas);
             });
 
-            // Configuracin de Solicitud
+            // --- Solicitud ---
             modelBuilder.Entity<Solicitud>(entity =>
             {
                 entity.ToTable("solicitud");
@@ -148,44 +111,20 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.ActualizadoPor).HasColumnName("actualizado_por");
                 entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
 
-                entity.HasOne(e => e.Personal)
-                    .WithMany(p => p.Solicitudes)
-                    .HasForeignKey(e => e.IdPersonal)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(s => s.IdSla);
+                entity.HasIndex(s => s.IdRolRegistro);
+                entity.HasIndex(s => s.FechaSolicitud);
 
-                entity.HasOne(e => e.RolRegistro)
-                    .WithMany(r => r.Solicitudes)
-                    .HasForeignKey(e => e.IdRolRegistro)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                // Relación con ConfigSla sin mapeo inverso (ya que ConfigSla.Solicitudes está ignorado)
-                entity.HasOne(e => e.ConfigSla)
-                    .WithMany()
-                    .HasForeignKey(e => e.IdSla)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.Area)
-                    .WithMany(a => a.Solicitudes)
-                    .HasForeignKey(e => e.IdArea)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.EstadoSolicitud)
-                    .WithMany(e => e.Solicitudes)
-                    .HasForeignKey(e => e.IdEstadoSolicitud)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.UsuarioCreadoPor)
-                    .WithMany(u => u.SolicitudesCreadas)
-                    .HasForeignKey(e => e.CreadoPor)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.UsuarioActualizadoPor)
-                    .WithMany(u => u.SolicitudesActualizadas)
-                    .HasForeignKey(e => e.ActualizadoPor)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Personal).WithMany(p => p.Solicitudes).HasForeignKey(e => e.IdPersonal).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.RolRegistro).WithMany(r => r.Solicitudes).HasForeignKey(e => e.IdRolRegistro).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ConfigSla).WithMany(cs => cs.Solicitudes).HasForeignKey(e => e.IdSla).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Area).WithMany(a => a.Solicitudes).HasForeignKey(e => e.IdArea).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.EstadoSolicitud).WithMany(e => e.Solicitudes).HasForeignKey(e => e.IdEstadoSolicitud).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.UsuarioCreadoPor).WithMany(u => u.SolicitudesCreadas).HasForeignKey(e => e.CreadoPor).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.UsuarioActualizadoPor).WithMany(u => u.SolicitudesActualizadas).HasForeignKey(e => e.ActualizadoPor).OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuracin de RolesSistema
+            // --- RolesSistema ---
             modelBuilder.Entity<RolesSistema>(entity =>
             {
                 entity.ToTable("roles_sistema");
@@ -197,7 +136,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.EsActivo).IsRequired().HasColumnName("es_activo");
             });
 
-            // Configuracin de EstadoUsuarioCatalogo
+            // --- EstadoUsuarioCatalogo ---
             modelBuilder.Entity<EstadoUsuarioCatalogo>(entity =>
             {
                 entity.ToTable("estado_usuario_catalogo");
@@ -207,7 +146,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuracin de EstadoSolicitudCatalogo
+            // --- EstadoSolicitudCatalogo ---
             modelBuilder.Entity<EstadoSolicitudCatalogo>(entity =>
             {
                 entity.ToTable("estado_solicitud_catalogo");
@@ -217,7 +156,9 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuracin de ConfigSla
+            // --- ConfigSla (CONFIGURACIÓN CORREGIDA Y LIMPIA) ---
+            // --- REEMPLAZA TU BLOQUE DE CONFIGSLA POR ESTE ---
+            // --- ConfigSla ---
             modelBuilder.Entity<ConfigSla>(entity =>
             {
                 entity.ToTable("config_sla");
@@ -233,14 +174,24 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.ActualizadoPor).HasColumnName("actualizado_por");
                 entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
 
-                // Ignorar propiedades de navegación que no tienen columnas en la BD
-                entity.Ignore(e => e.TipoSolicitud);
-                entity.Ignore(e => e.UsuarioCreadoPor);
-                entity.Ignore(e => e.UsuarioActualizadoPor);
-                entity.Ignore(e => e.Solicitudes);
+                entity.HasOne(e => e.TipoSolicitud)
+                    .WithMany(ts => ts.ConfigSlas)
+                    .HasForeignKey(e => e.IdTipoSolicitud)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.UsuarioCreadoPor)
+                    .WithMany(u => u.ConfigSlasCreadas)
+                    .HasForeignKey(e => e.CreadoPor)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.UsuarioActualizadoPor)
+                    .WithMany(u => u.ConfigSlasActualizadas)
+                    .HasForeignKey(e => e.ActualizadoPor)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuracin de TipoSolicitudCatalogo
+
+            // --- TipoSolicitudCatalogo ---
             modelBuilder.Entity<TipoSolicitudCatalogo>(entity =>
             {
                 entity.ToTable("tipo_solicitud_catalogo");
@@ -250,14 +201,13 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuracin de RolRegistro
+            // --- RolRegistro ---
             modelBuilder.Entity<RolRegistro>(entity =>
             {
                 entity.ToTable("rol_registro");
                 entity.HasKey(e => e.IdRolRegistro);
                 entity.Property(e => e.IdRolRegistro).HasColumnName("id_rol_registro");
                 entity.Property(e => e.NombreRol).IsRequired().HasMaxLength(100).HasColumnName("nombre_rol");
-                entity.Property(e => e.BloqueTeach).HasMaxLength(100).HasColumnName("bloque_teach");
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
                 entity.Property(e => e.EsActivo).IsRequired().HasColumnName("es_activo");
             });

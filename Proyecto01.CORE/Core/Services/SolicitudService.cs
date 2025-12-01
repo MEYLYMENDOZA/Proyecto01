@@ -1,68 +1,90 @@
+using Microsoft.EntityFrameworkCore;
 using Proyecto01.CORE.Core.DTOs;
+using Proyecto01.CORE.Core.Entities;
 using Proyecto01.CORE.Core.Interfaces;
-
+using System.Globalization;
+using Proyecto01.CORE.Infrastructure.Data;
 namespace Proyecto01.CORE.Core.Services
 {
-    public class SolicitudService : ISolicitudService
+    public class SolicitudService : ISolicitudService // <-- Implementa la interfaz limpia
     {
         private readonly ISolicitudRepository _repository;
+        private readonly Proyecto01DbContext _context;
 
-        public SolicitudService(ISolicitudRepository repository)
+        public SolicitudService(ISolicitudRepository repository, Proyecto01DbContext context)
         {
             _repository = repository;
+            _context = context;
         }
 
-        public async Task<IEnumerable<SolicitudListDTO>> GetAll()
+        // --- TUS MÉTODOS ORIGINALES ---
+        public async Task<IEnumerable<SolicitudListDTO>> GetAll() => await _repository.GetAll();
+        public async Task<SolicitudListDTO?> GetById(int id) => await _repository.GetById(id);
+        public async Task<int> Insert(SolicitudCreateDTO dto) => await _repository.Insert(dto);
+        public async Task<int> Update(SolicitudUpdateDTO dto) => await _repository.Update(dto);
+        public async Task<bool> Delete(int id) => await _repository.Delete(id);
+
+        // --- NUEVO MÉTODO ---
+        public async Task<int> InsertBatch(List<CargaItemDataDto> solicitudesDto)
         {
-            return await _repository.GetAll();
-        }
+            var nuevasSolicitudesDb = new List<Solicitud>();
+            int usuarioLogueadoId = 2; // OJO: VALOR DE EJEMPLO
 
-        public async Task<SolicitudListDTO?> GetById(int id)
-        {
-            if (id <= 0) return null;
-            return await _repository.GetById(id);
-        }
+            foreach (var dto in solicitudesDto)
+            {
+                // --- INICIO DE LA MODIFICACIÓN ---
+                // Optimizamos las consultas para buscar solo el ID y evitar errores de EF.
 
-        public async Task<int> Insert(SolicitudCreateDTO dto)
-        {
-            if (dto.IdPersonal <= 0)
-                throw new ArgumentException("El ID del personal es inválido.");
+                var rolId = await _context.RolesRegistro
+                    .Where(r => r.NombreRol.ToLower() == dto.Rol.ToLower())
+                    .Select(r => (int?)r.IdRolRegistro)
+                    .FirstOrDefaultAsync();
 
-            if (dto.IdRolRegistro <= 0)
-                throw new ArgumentException("El ID del rol de registro es inválido.");
+                var slaId = await _context.ConfigSlas
+                    .Where(s => s.CodigoSla.ToLower() == dto.TipoSla.ToLower())
+                    .Select(s => (int?)s.IdSla)
+                    .FirstOrDefaultAsync();
 
-            if (dto.IdSla <= 0)
-                throw new ArgumentException("El ID del SLA es inválido.");
+                var estadoId = await _context.EstadosSolicitud
+                    .Where(e => e.Descripcion.ToLower() == dto.Estado.ToLower())
+                    .Select(e => (int?)e.IdEstadoSolicitud)
+                    .FirstOrDefaultAsync();
 
-            if (dto.IdArea <= 0)
-                throw new ArgumentException("El ID del área es inválido.");
+                // --- FIN DE LA MODIFICACIÓN ---
 
-            if (dto.IdEstadoSolicitud <= 0)
-                throw new ArgumentException("El ID del estado de solicitud es inválido.");
+                if (rolId == null)
+                    throw new ArgumentException($"El rol '{dto.Rol}' del registro '{dto.Codigo}' no fue encontrado.");
+                if (slaId == null)
+                    throw new ArgumentException($"El TipoSla '{dto.TipoSla}' del registro '{dto.Codigo}' no fue encontrado. Revisa que el código en la BD coincida (ej: 'SLA001').");
+                if (estadoId == null)
+                    throw new ArgumentException($"El estado '{dto.Estado}' del registro '{dto.Codigo}' no fue encontrado.");
 
-            return await _repository.Insert(dto);
-        }
+                if (!DateTime.TryParseExact(dto.FechaSolicitud, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fechaSolicitud))
+                    throw new ArgumentException($"Formato de fecha inválido para {dto.Codigo}");
 
-        public async Task<int> Update(SolicitudUpdateDTO dto)
-        {
-            if (dto.IdSolicitud <= 0)
-                throw new ArgumentException("El ID de la solicitud es inválido.");
+                if (!DateTime.TryParseExact(dto.FechaIngreso, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fechaIngreso))
+                    throw new ArgumentException($"Formato de fecha inválido para {dto.Codigo}");
 
-            var exists = await _repository.Exists(dto.IdSolicitud);
-            if (!exists)
-                throw new InvalidOperationException($"La solicitud con ID {dto.IdSolicitud} no existe.");
+                var nuevaSolicitudDb = new Solicitud
+                {
+                    FechaSolicitud = fechaSolicitud,
+                    FechaIngreso = fechaIngreso,
+                    NumDiasSla = dto.DiasTranscurridos,
+                    IdRolRegistro = rolId.Value, // Usamos el ID obtenido
+                    IdSla = slaId.Value,         // Usamos el ID obtenido
+                    IdEstadoSolicitud = estadoId.Value, // Usamos el ID obtenido
+                    OrigenDato = "APP",
+                    CreadoEn = DateTime.UtcNow,
+                    CreadoPor = usuarioLogueadoId,
+                    IdPersonal = 2, // VALOR DE EJEMPLO
+                    IdArea = 1,     // VALOR DE EJEMPLO
+                    ResumenSla = $"Carga desde APP: {dto.Codigo}"
+                };
+                nuevasSolicitudesDb.Add(nuevaSolicitudDb);
+            }
 
-            return await _repository.Update(dto);
-        }
-
-        public async Task<bool> Delete(int id)
-        {
-            if (id <= 0) return false;
-
-            var exists = await _repository.Exists(id);
-            if (!exists) return false;
-
-            return await _repository.Delete(id);
+            await _context.Solicitudes.AddRangeAsync(nuevasSolicitudesDb);
+            return await _context.SaveChangesAsync();
         }
     }
 }

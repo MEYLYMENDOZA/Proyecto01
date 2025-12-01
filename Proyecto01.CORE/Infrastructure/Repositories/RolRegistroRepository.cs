@@ -34,7 +34,7 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
                 .Select(r => new RolRegistroResponseDTO
                 {
                     IdRolRegistro = r.IdRolRegistro,
-                    BloqueTeach = r.BloqueTeach,
+                    // BloqueTeach ELIMINADO DE AQUÍ
                     Descripcion = r.Descripcion,
                     EsActivo = r.EsActivo,
                     NombreRol = r.NombreRol
@@ -46,7 +46,7 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
         {
             var rolRegistro = new RolRegistro
             {
-                BloqueTeach = dto.BloqueTeach,
+                // BloqueTeach ELIMINADO DE AQUÍ
                 Descripcion = dto.Descripcion,
                 EsActivo = dto.EsActivo,
                 NombreRol = dto.NombreRol
@@ -62,8 +62,7 @@ namespace Proyecto01.CORE.Infrastructure.Repositories
             var rolRegistro = await _context.RolesRegistro.FindAsync(dto.IdRolRegistro);
             if (rolRegistro == null) return 0;
 
-            if (dto.BloqueTeach != null)
-                rolRegistro.BloqueTeach = dto.BloqueTeach;
+            // BloqueTeach ELIMINADO DE AQUÍ
 
             if (dto.Descripcion != null)
                 rolRegistro.Descripcion = dto.Descripcion;
