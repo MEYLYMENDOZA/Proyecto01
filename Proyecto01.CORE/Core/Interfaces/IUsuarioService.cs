@@ -8,7 +8,7 @@ namespace Proyecto01.CORE.Core.Interfaces
         Task<UsuarioResponseDTO?> GetById(int id);
         Task<UsuarioResponseDTO?> SignIn(string username, string password);
         Task<int> SignUp(UsuarioCreateDTO dto);
-        Task<int> Update(UsuarioResponseDTO dto);
+        Task<bool> Update(UsuarioUpdateDTO dto);
         Task<bool> Delete(int id);
     }
 }

@@ -32,7 +32,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuraci髇 de Area
+            // Configuraci贸n de Area
             modelBuilder.Entity<Area>(entity =>
             {
                 entity.ToTable("area");
@@ -42,7 +42,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuraci髇 de Personal
+            // Configuraci贸n de Personal
             modelBuilder.Entity<Personal>(entity =>
             {
                 entity.ToTable("personal");
@@ -61,7 +61,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuraci髇 de Usuario
+            // Configuraci贸n de Usuario
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.ToTable("usuario");
@@ -74,6 +74,22 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
                 entity.Property(e => e.CreadoEn).IsRequired().HasColumnName("creado_en");
 
+                // 2. CORRECCI脫N DE LOS NOMBRES DE LAS COLUMNAS (Snake_case en la BD)
+                entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+                entity.Property(e => e.Username).HasColumnName("username").IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Correo).HasColumnName("correo").IsRequired().HasMaxLength(100);
+                entity.Property(e => e.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
+
+                entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
+                entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
+
+                // Esta es la l铆nea que resuelve el error 'Invalid column name 'CreadoEn''
+                entity.Property(e => e.CreadoEn).HasColumnName("creado_en").IsRequired();
+                entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
+                entity.Property(e => e.UltimoLogin).HasColumnName("ultimo_login");
+
+
+                // ... (restricciones de navegaci贸n sin cambios) ...
                 entity.HasOne(e => e.RolesSistema)
                     .WithMany(r => r.Usuarios)
                     .HasForeignKey(e => e.IdRolSistema)
@@ -85,7 +101,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuraci髇 de Solicitud
+            // Configuraci贸n de Solicitud
             modelBuilder.Entity<Solicitud>(entity =>
             {
                 entity.ToTable("solicitud");
@@ -142,7 +158,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuraci髇 de RolesSistema
+            // Configuraci贸n de RolesSistema
             modelBuilder.Entity<RolesSistema>(entity =>
             {
                 entity.ToTable("roles_sistema");
@@ -154,7 +170,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.EsActivo).IsRequired().HasColumnName("es_activo");
             });
 
-            // Configuraci髇 de EstadoUsuarioCatalogo
+            // Configuraci贸n de EstadoUsuarioCatalogo
             modelBuilder.Entity<EstadoUsuarioCatalogo>(entity =>
             {
                 entity.ToTable("estado_usuario_catalogo");
@@ -164,7 +180,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuraci髇 de EstadoSolicitudCatalogo
+            // Configuraci贸n de EstadoSolicitudCatalogo
             modelBuilder.Entity<EstadoSolicitudCatalogo>(entity =>
             {
                 entity.ToTable("estado_solicitud_catalogo");
@@ -174,7 +190,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuraci髇 de ConfigSla
+            // Configuraci贸n de ConfigSla
             modelBuilder.Entity<ConfigSla>(entity =>
             {
                 entity.ToTable("config_sla");
@@ -206,7 +222,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuraci髇 de TipoSolicitudCatalogo
+            // Configuraci贸n de TipoSolicitudCatalogo
             modelBuilder.Entity<TipoSolicitudCatalogo>(entity =>
             {
                 entity.ToTable("tipo_solicitud_catalogo");
@@ -216,7 +232,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuraci髇 de RolRegistro
+            // Configuraci贸n de RolRegistro
             modelBuilder.Entity<RolRegistro>(entity =>
             {
                 entity.ToTable("rol_registro");
@@ -228,7 +244,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.EsActivo).IsRequired().HasColumnName("es_activo");
             });
 
-            // Configuraci髇 de Alerta
+            // Configuraci贸n de Alerta
             modelBuilder.Entity<Alerta>(entity =>
             {
                 entity.ToTable("alerta");
@@ -258,7 +274,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuraci髇 de TipoAlertaCatalogo
+            // Configuraci贸n de TipoAlertaCatalogo
             modelBuilder.Entity<TipoAlertaCatalogo>(entity =>
             {
                 entity.ToTable("tipo_alerta_catalogo");
@@ -268,7 +284,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuraci髇 de EstadoAlertaCatalogo
+            // Configuraci贸n de EstadoAlertaCatalogo
             modelBuilder.Entity<EstadoAlertaCatalogo>(entity =>
             {
                 entity.ToTable("estado_alerta_catalogo");
@@ -278,7 +294,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(250).HasColumnName("descripcion");
             });
 
-            // Configuraci髇 de Reporte
+            // Configuraci贸n de Reporte
             modelBuilder.Entity<Reporte>(entity =>
             {
                 entity.ToTable("reporte");
@@ -297,7 +313,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configuraci髇 de ReporteDetalle (tabla intermedia)
+            // Configuraci贸n de ReporteDetalle (tabla intermedia)
             modelBuilder.Entity<ReporteDetalle>(entity =>
             {
                 entity.ToTable("reporte_detalle");
@@ -316,7 +332,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configuraci髇 de Permiso
+            // Configuraci贸n de Permiso
             modelBuilder.Entity<Permiso>(entity =>
             {
                 entity.ToTable("permiso");
@@ -327,7 +343,7 @@ namespace Proyecto01.CORE.Infrastructure.Data
                 entity.Property(e => e.Nombre).HasMaxLength(100).HasColumnName("nombre");
             });
 
-            // Configuraci髇 de RolPermiso (tabla intermedia)
+            // Configuraci贸n de RolPermiso (tabla intermedia)
             modelBuilder.Entity<RolPermiso>(entity =>
             {
                 entity.ToTable("rol_permiso");
