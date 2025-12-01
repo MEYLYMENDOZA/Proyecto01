@@ -1,7 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System;
+using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+
 namespace Proyecto01.CORE.Core.Entities
 {
+    // --- VERSIÓN LIMPIA Y DEFINITIVA ---
+    // Sin atributos [Table] ni [Column] para eliminar el conflicto.
+    // La configuración vive 100% en Proyecto01DbContext.cs, que es lo correcto.
     public class Solicitud
     {
+        [Key] // El [Key] es el único que necesitamos aquí.
         public int IdSolicitud { get; set; }
         public int IdPersonal { get; set; }
         public int IdRolRegistro { get; set; }
@@ -18,7 +33,7 @@ namespace Proyecto01.CORE.Core.Entities
         public DateTime? ActualizadoEn { get; set; }
         public int? ActualizadoPor { get; set; }
 
-        // Navegación
+        // --- Navegación (esto no cambia y está perfecto) ---
         public Personal? Personal { get; set; }
         public RolRegistro? RolRegistro { get; set; }
         public ConfigSla? ConfigSla { get; set; }
