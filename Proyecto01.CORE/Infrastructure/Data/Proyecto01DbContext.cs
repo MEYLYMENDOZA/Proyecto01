@@ -82,8 +82,14 @@ namespace Proyecto01.CORE.Infrastructure.Data
             {
                 // 1. CORRECCIÓN DEL NOMBRE DE LA TABLA (Ya la habías hecho, la repetimos para claridad)
                 entity.ToTable("usuario");
-
                 entity.HasKey(e => e.IdUsuario);
+                entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(50).HasColumnName("username");
+                entity.Property(e => e.Correo).IsRequired().HasMaxLength(100).HasColumnName("correo");
+                entity.Property(e => e.PasswordHash).HasMaxLength(255).HasColumnName("password_hash");
+                entity.Property(e => e.IdRolSistema).HasColumnName("id_rol_sistema");
+                entity.Property(e => e.IdEstadoUsuario).HasColumnName("id_estado_usuario");
+                entity.Property(e => e.CreadoEn).IsRequired().HasColumnName("creado_en");
 
                 entity.ToTable("usuario");
                 entity.HasKey(e => e.IdUsuario);

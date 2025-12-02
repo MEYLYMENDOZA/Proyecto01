@@ -9,5 +9,6 @@ namespace Proyecto01.CORE.Core.Interfaces
         Task<int> Insert(SolicitudCreateDTO dto);
         Task<int> Update(SolicitudUpdateDTO dto);
         Task<bool> Delete(int id);
+        Task<int> ProcesarSlas();
     }
 }

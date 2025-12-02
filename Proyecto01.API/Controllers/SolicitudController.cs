@@ -92,5 +92,21 @@ namespace Proyecto01.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // --- NUEVO MÉTODO PARA EL CÁLCULO DE SLA ---
+        [HttpPost("procesar-slas")]
+        public async Task<IActionResult> ProcesarSlas()
+        {
+            try
+            {
+                // Llamamos al servicio para ejecutar el Store Procedure
+                var cantidad = await _service.ProcesarSlas();
+                return Ok(new { message = $"Proceso ejecutado. Se generaron {cantidad} nuevas alertas." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al procesar SLAs", error = ex.Message });
+            }
+        }
     }
 }

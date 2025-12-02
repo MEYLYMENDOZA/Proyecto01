@@ -23,6 +23,12 @@ namespace Proyecto01.CORE.Core.Services
             return await _repository.GetById(id);
         }
 
+        // Agrega esto dentro de SolicitudService
+        public async Task<int> ProcesarSlas()
+        {
+            return await _repository.ProcesarSlas();
+        }
+
         public async Task<int> Insert(SolicitudCreateDTO dto)
         {
             if (dto.IdPersonal <= 0)
