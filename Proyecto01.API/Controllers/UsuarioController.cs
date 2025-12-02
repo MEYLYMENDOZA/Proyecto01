@@ -75,7 +75,7 @@ namespace Proyecto01.API.Controllers
             if (user == null)
             {
                 // 401 Unauthorized
-                return Unauthorized("Correo o contraseña incorrectos.");
+                return Unauthorized("Correo o contraseña incorrectos, o usuario inactivo.");
             }
 
             // Retorna 200 OK con los datos del usuario (excluyendo el hash)
@@ -119,8 +119,9 @@ namespace Proyecto01.API.Controllers
             }
         }
 
-        // 6. DELETE - Eliminar un usuario
-        // La ruta es /api/User/{id}
+        // 6. DELETE - Desactivar un usuario (Soft Delete)
+        // NOTA: Este endpoint NO elimina físicamente el usuario
+        // Solo lo marca como INACTIVO para mantener la integridad de datos
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -128,10 +129,15 @@ namespace Proyecto01.API.Controllers
 
             if (!success)
                 // 404 Not Found
-                return NotFound($"Usuario con ID {id} no encontrado para eliminar.");
+                return NotFound($"Usuario con ID {id} no encontrado.");
 
             // 204 No Content: Éxito en la eliminación sin devolver contenido
-            return NoContent();
+            return Ok(new 
+            { 
+                message = "Usuario desactivado exitosamente. El usuario ha sido marcado como inactivo.",
+                id = id,
+                note = "Los datos del usuario se mantienen por integridad referencial."
+            });
         }
     }
 }
