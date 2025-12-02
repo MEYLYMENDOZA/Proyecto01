@@ -1,0 +1,270 @@
+{
+  "info": {
+    "name": "Proyecto01 - Usuario API",
+    "description": "Colección completa de endpoints para gestión de usuarios",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Crear Usuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"correo\": \"admin@proyecto01.com\",\n  \"password\": \"Admin123456\",\n  \"idRolSistema\": 1,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User"]
+        },
+        "description": "Crea un nuevo usuario en el sistema. Requiere username único, correo único, contraseña de al menos 8 caracteres, rol válido y estado válido."
+      }
+    },
+    {
+      "name": "2. Iniciar Sesión",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"admin@proyecto01.com\",\n  \"password\": \"Admin123456\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User/SignIn",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User", "SignIn"]
+        },
+        "description": "Inicia sesión con correo y contraseña. Retorna los datos del usuario sin el hash de contraseña."
+      }
+    },
+    {
+      "name": "3. Obtener Todos los Usuarios",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5120/api/User",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User"]
+        },
+        "description": "Obtiene la lista de todos los usuarios registrados en el sistema."
+      }
+    },
+    {
+      "name": "4. Obtener Usuario por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5120/api/User/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User", "1"]
+        },
+        "description": "Obtiene los datos de un usuario específico por su ID."
+      }
+    },
+    {
+      "name": "5. Actualizar Usuario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": 1,\n  \"username\": \"admin_updated\",\n  \"correo\": \"admin_updated@proyecto01.com\",\n  \"password\": \"NewPassword123\",\n  \"idRolSistema\": 1,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User", "1"]
+        },
+        "description": "Actualiza los datos de un usuario existente. El campo password es opcional."
+      }
+    },
+    {
+      "name": "6. Eliminar Usuario",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5120/api/User/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User", "1"]
+        },
+        "description": "Elimina un usuario del sistema por su ID."
+      }
+    },
+    {
+      "name": "7. Crear Usuario - Caso Error (Username Duplicado)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"correo\": \"otro@proyecto01.com\",\n  \"password\": \"Password123\",\n  \"idRolSistema\": 2,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User"]
+        },
+        "description": "Ejemplo de error 409 Conflict cuando se intenta crear un usuario con username duplicado."
+      }
+    },
+    {
+      "name": "8. Login - Caso Error (Credenciales Incorrectas)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"admin@proyecto01.com\",\n  \"password\": \"PasswordIncorrecta\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User/SignIn",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User", "SignIn"]
+        },
+        "description": "Ejemplo de error 401 Unauthorized cuando las credenciales son incorrectas."
+      }
+    },
+    {
+      "name": "9. Crear Usuario - Rol Inválido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"correo\": \"testuser@proyecto01.com\",\n  \"password\": \"Password123\",\n  \"idRolSistema\": 0,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User"]
+        },
+        "description": "Ejemplo de error 400 Bad Request cuando se envía un rol inválido."
+      }
+    },
+    {
+      "name": "10. Crear Usuario Básico",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"usuario1\",\n  \"correo\": \"usuario1@proyecto01.com\",\n  \"password\": \"Password123\",\n  \"idRolSistema\": 2,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User"]
+        },
+        "description": "Crea un usuario con rol USER (id=2)."
+      }
+    },
+    {
+      "name": "11. Crear Usuario Gestor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"gestor1\",\n  \"correo\": \"gestor1@proyecto01.com\",\n  \"password\": \"Password123\",\n  \"idRolSistema\": 3,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User"]
+        },
+        "description": "Crea un usuario con rol GESTOR (id=3)."
+      }
+    },
+    {
+      "name": "12. Actualizar Usuario (Sin Cambiar Password)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": 2,\n  \"username\": \"usuario1_updated\",\n  \"correo\": \"usuario1_updated@proyecto01.com\",\n  \"idRolSistema\": 2,\n  \"idEstadoUsuario\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5120/api/User/2",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5120",
+          "path": ["api", "User", "2"]
+        },
+        "description": "Actualiza un usuario sin cambiar su contraseña (campo password omitido)."
+      }
+    }
+  ]
+}

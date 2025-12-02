@@ -11,6 +11,7 @@ namespace Proyecto01.CORE.Core.DTOs
         public string? PasswordHash { get; set; }
 
         public int IdRolSistema { get; set; }
+        public int IdEstadoUsuario { get; set; }
         public DateTime CreadoEn { get; set; }
         // ... (otros campos si los tienes) ...
     }

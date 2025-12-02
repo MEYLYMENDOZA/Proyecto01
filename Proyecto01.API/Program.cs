@@ -6,13 +6,35 @@ using Proyecto01.CORE.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuración de Logging - DIAGNÓSTICO
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Add services to the container.
 var _config = builder.Configuration;
 var cnx = _config.GetConnectionString("DefaultConnection");
 
+// Log la cadena de conexión (sin credenciales sensibles)
+Console.WriteLine($"✓ Cadena de conexión configurada");
+
 // Configuración DbContext para SQL Server
 builder.Services.AddDbContext<Proyecto01DbContext>(options =>
-    options.UseSqlServer(cnx));
+{
+    options.UseSqlServer(cnx);
+    options.LogTo(Console.WriteLine, LogLevel.Information);
+});
+
+// Configuración de CORS para permitir conexiones desde Android
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAndroid", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // Configuración de CORS para permitir conexiones desde Android
 builder.Services.AddCors(options =>
@@ -71,6 +93,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    Console.WriteLine("✓ Ambiente: Desarrollo");
 }
 
 // Habilitar CORS para permitir conexiones desde Android
@@ -83,5 +106,7 @@ app.UseCors("AllowAndroid");
 app.UseAuthorization();
 
 app.MapControllers();
+
+Console.WriteLine("✓ API iniciada correctamente en puerto 5120");
 
 app.Run();

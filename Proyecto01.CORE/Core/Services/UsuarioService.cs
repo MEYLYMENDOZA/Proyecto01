@@ -33,6 +33,10 @@ namespace Proyecto01.CORE.Core.Services
             var usuario = await _repository.GetByCorreo(correo);
             if (usuario == null) return null;
 
+            // Verificar que el usuario esté activo (IdEstadoUsuario = 1)
+            if (usuario.IdEstadoUsuario != 1)
+                return null; // Usuario inactivo o bloqueado
+
             // Verificar la contraseña usando BCrypt
             if (string.IsNullOrEmpty(usuario.PasswordHash))
                 return null;
@@ -48,6 +52,10 @@ namespace Proyecto01.CORE.Core.Services
 
         public async Task<int> SignUp(UsuarioCreateDTO dto)
         {
+            // ========================================
+            // VALIDACIONES DE CAMPOS USUARIO
+            // ========================================
+            
             if (string.IsNullOrWhiteSpace(dto.Username))
                 throw new ArgumentException("El username es requerido.");
 
@@ -61,6 +69,20 @@ namespace Proyecto01.CORE.Core.Services
             if (dto.IdRolSistema <= 0)
                 throw new ArgumentException("Debe especificar un rol de sistema válido.");
 
+            // ========================================
+            // VALIDACIONES DE CAMPOS PERSONAL
+            // ========================================
+            
+            if (string.IsNullOrWhiteSpace(dto.Nombres))
+                throw new ArgumentException("El nombre es requerido.");
+
+            if (string.IsNullOrWhiteSpace(dto.Apellidos))
+                throw new ArgumentException("El apellido es requerido.");
+
+            // ========================================
+            // VALIDACIONES DE DUPLICADOS
+            // ========================================
+            
             var userExists = await _repository.ExistsByUsername(dto.Username);
             if (userExists)
                 throw new InvalidOperationException("El username ya existe.");
@@ -69,9 +91,17 @@ namespace Proyecto01.CORE.Core.Services
             if (emailExists)
                 throw new InvalidOperationException("El correo ya está registrado.");
 
+            // ========================================
+            // PREPARAR DATOS PARA GUARDAR
+            // ========================================
+            
             // Generar hash de la contraseña usando BCrypt
             dto.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
+            // Asegurar que IdEstadoUsuario sea 1 (ACTIVO)
+            dto.IdEstadoUsuario = 1;
+
+            // Guardar Usuario y Personal en una transacción
             return await _repository.Insert(dto);
         }
 
@@ -123,6 +153,8 @@ namespace Proyecto01.CORE.Core.Services
             return await _repository.Update(usuario);
         }
 
+        // SOFT DELETE - Marca el usuario como inactivo
+        // No elimina físicamente el registro para mantener la integridad referencial
         public async Task<bool> Delete(int id)
         {
             if (id <= 0) return false;
@@ -130,6 +162,7 @@ namespace Proyecto01.CORE.Core.Services
             var exists = await _repository.Exists(id);
             if (!exists) return false;
 
+            // Este método marca al usuario como INACTIVO (soft delete)
             return await _repository.Delete(id);
         }
     }
